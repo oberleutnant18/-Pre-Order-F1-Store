@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>F1 Merch Store</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text y='48' font-size='48'>🏁</text></svg>">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    <div class="logo">🏁</div>
+    <div class="title">
+      <h1 data-i18n="store_name">F1 Merch Store</h1>
+      <p class="tag" data-i18n="store_tag">โมเดล • พวงกุญแจ • ของที่ระลึก • เสื้อผ้า</p>
+    </div>
+  </div>
+  <nav class="actions">
+    <select id="langSelect" aria-label="Language">
+      <option value="th">ไทย</option>
+      <option value="en">English</option>
+    </select>
+    <button id="cartButton" class="cart-button" aria-label="Cart">
+      <span class="icon">🛒</span>
+      <span class="count" id="cartCount">0</span>
+    </button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <aside class="sidebar">
+    <h2 data-i18n="categories">หมวดหมู่</h2>
+    <ul id="categoryList" class="category-list"></ul>
+
+    <h2 data-i18n="filters">ตัวกรอง</h2>
+    <div class="filters">
+      <label>
+        <span data-i18n="price_range">ช่วงราคา</span>
+        <input type="range" id="priceRange" min="0" max="15000" step="50" value="15000" />
+        <span id="priceDisplay">15,000฿</span>
+      </label>
+      <label class="search">
+        <span data-i18n="search">ค้นหา</span>
+        <input type="search" id="searchInput" placeholder="Ferrari, keychain..." />
+      </label>
+    </div>
+  </aside>
+
+  <section class="grid-section">
+    <div class="grid-header">
+      <h2 data-i18n="products">สินค้า</h2>
+      <select id="sortSelect">
+        <option value="popular" data-i18n="sort_popular">ยอดนิยม</option>
+        <option value="price_asc" data-i18n="sort_price_asc">ราคาต่ำ→สูง</option>
+        <option value="price_desc" data-i18n="sort_price_desc">ราคาสูง→ต่ำ</option>
+        <option value="name_asc" data-i18n="sort_name_asc">ชื่อ A→Z</option>
+      </select>
+    </div>
+    <div id="productGrid" class="product-grid"></div>
+  </section>
+</main>
+
+<!-- Cart Drawer -->
+<aside id="cartDrawer" class="cart-drawer" aria-hidden="true">
+  <div class="cart-header">
+    <h3 data-i18n="your_cart">ตะกร้าของคุณ</h3>
+    <button id="closeCart" class="icon-btn" aria-label="Close">✖</button>
+  </div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="cart-footer">
+    <div class="row">
+      <span data-i18n="subtotal">ยอดรวม</span>
+      <strong id="cartSubtotal">0฿</strong>
+    </div>
+    <button id="checkoutBtn" class="primary" data-i18n="checkout">ชำระเงิน</button>
+  </div>
+</aside>
+
+<!-- Checkout Modal -->
+<div id="checkoutModal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="checkoutTitle">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="checkoutTitle" data-i18n="checkout">ชำระเงิน</h3>
+      <button id="closeCheckout" class="icon-btn" aria-label="Close">✖</button>
+    </div>
+    <div class="modal-body">
+      <div class="checkout-left">
+        <h4 data-i18n="order_summary">สรุปคำสั่งซื้อ</h4>
+        <div id="summaryList" class="summary-list"></div>
+        <div class="row total">
+          <span data-i18n="total">รวม</span>
+          <strong id="summaryTotal">0฿</strong>
+        </div>
+      </div>
+      <div class="checkout-right">
+        <h4>PromptPay</h4>
+        <p class="muted" data-i18n="promptpay_note">
+          ชำระเงินด้วยการสแกนคิวอาร์พร้อมเพย์ ระบบจะสร้างคิวอาร์ไดนามิกตามยอดรวม
+        </p>
+        <form id="promptpayForm" class="pp-form">
+          <label>
+            <span data-i18n="promptpay_id">หมายเลขพร้อมเพย์ (มือถือ/บัตรประชาชน)</span>
+            <input id="ppId" type="text" required placeholder="0812345678 หรือ 1103700xxxxxxx" />
+          </label>
+          <label>
+            <span data-i18n="merchant_name">ชื่อร้าน</span>
+            <input id="merchantName" type="text" value="F1 Merch Store" />
+          </label>
+          <div class="qr-block">
+            <div id="qrContainer" class="qr-container" aria-live="polite"></div>
+            <div class="qr-actions">
+              <button id="genQR" type="submit" class="primary" data-i18n="generate_qr">สร้างคิวอาร์</button>
+              <button id="copyPayload" type="button" class="ghost" data-i18n="copy_payload">คัดลอก Payload</button>
+            </div>
+            <p class="muted small" data-i18n="qr_hint">
+              หากคิวอาร์ไม่แสดง สามารถวาง Payload ในแอปธนาคารเพื่อชำระได้
+            </p>
+          </div>
+        </form>
+        <div class="confirm">
+          <label class="row">
+            <input id="confirmPaid" type="checkbox" />
+            <span data-i18n="i_have_paid">ฉันได้ชำระเงินแล้ว</span>
+          </label>
+          <button id="placeOrder" class="success" disabled data-i18n="place_order">ยืนยันคำสั่งซื้อ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <p>© <span id="year"></span> F1 Merch Store • <span data-i18n="footer_note">สร้างด้วยรักสำหรับแฟน F1</span></p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
